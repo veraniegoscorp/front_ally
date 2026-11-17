@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Ally convierte tus fechas de entrega en un plan de estudio que puedes ver y ajustar."
+    />
+    <title>Ally — Dale rumbo a tu semana</title>
+  </head>
+  <body>
+    <div id="root">
+      <div id="app-initial-loader" style="display:flex;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;background:#06121e;color:#5de4d8;font-family:'Sora',sans-serif;padding:24px;text-align:center;">
+        <svg style="width:52px;height:52px;margin-bottom:18px;animation:pulseInitial 2s ease-in-out infinite;" viewBox="0 0 42 42" fill="none" stroke="#5de4d8" stroke-width="2.4" stroke-linecap="round">
+          <path d="M5 26.5c5.4 0 5.4-11 10.8-11s5.4 11 10.8 11 5.4-11 10.8-11" />
+          <path d="M5 34c5.4 0 5.4-11 10.8-11s5.4 11 10.8 11 5.4-11 10.8-11" />
+          <circle cx="21" cy="7" r="2.2" fill="#9af4e6" stroke="none" />
+        </svg>
+        <p style="margin:0;font-size:17px;font-weight:600;color:#edf7f7;letter-spacing:-0.02em;">Iniciando Ally…</p>
+        <p style="margin:6px 0 0;font-size:13px;color:#93afbb;">Preparando tu espacio de estudio</p>
+        <style>
+          @keyframes pulseInitial {
+            0%, 100% { transform: scale(0.96); opacity: 0.6; }
+            50% { transform: scale(1.04); opacity: 1; }
+          }
+        </style>
+      </div>
+    </div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
