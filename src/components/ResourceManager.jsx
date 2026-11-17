@@ -135,12 +135,15 @@ function initialValues(resource, data) {
 
 function toInputValues(resource, item) {
   return Object.fromEntries(Object.entries(item).map(([key, value]) => {
-    if (key === 'deadline' || key === 'starts_at' || key === 'ends_at') {
+    if (key === 'deadline' || (['starts_at', 'ends_at'].includes(key) && resource === 'blocks')) {
       const date = new Date(value)
       const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
       return [key, Number.isNaN(date.getTime()) ? '' : local.toISOString().slice(0, 16)]
     }
-    if (['weekday', 'specific_date', 'subtask'].includes(key) && value === null) return [key, '']
+    if (['starts_at', 'ends_at'].includes(key) && resource === 'availability') {
+      return [key, value ? value.slice(0, 5) : '']
+    }
+    if (['weekday', 'specific_date', 'subtask'].includes(key) && value === null) return [key, '' ]
     if (['goal', 'category', 'weekday', 'subtask'].includes(key) && value !== null) return [key, String(value)]
     return [key, value]
   }))
@@ -149,7 +152,7 @@ function toInputValues(resource, item) {
 function buildPayload(resource, values) {
   const payload = { ...values }
   for (const [key, value] of Object.entries(payload)) {
-    if (['deadline', 'starts_at', 'ends_at'].includes(key) && value) {
+    if ((key === 'deadline' || (['starts_at', 'ends_at'].includes(key) && resource === 'blocks')) && value) {
       payload[key] = new Date(value).toISOString()
     } else if (['session_minutes', 'minimum_session_minutes', 'break_minutes', 'minimum_study_minutes', 'position'].includes(key)) {
       payload[key] = Number(value)
@@ -161,11 +164,18 @@ function buildPayload(resource, values) {
       payload[key] = null
     }
   }
-  if (resource === 'availability' && payload.specific_date) {
-    payload.weekday = null
-  }
-  if (resource === 'availability' && payload.weekday !== null) {
-    payload.specific_date = null
+  if (resource === 'availability') {
+    if (payload.specific_date) {
+      payload.weekday = null
+    } else if (payload.weekday !== null) {
+      payload.specific_date = null
+    }
+    if (payload.starts_at) {
+      payload.starts_at = payload.starts_at.slice(0, 5)
+    }
+    if (payload.ends_at) {
+      payload.ends_at = payload.ends_at.slice(0, 5)
+    }
   }
   return payload
 }
@@ -238,6 +248,16 @@ export default function ResourceManager({ resource, data, onRefresh, onSchedule,
     setBusy(true)
     setErrors([])
     try {
+      if (resource === 'availability') {
+        const hasWeekday = values.weekday !== '' && values.weekday !== null && values.weekday !== undefined
+        const hasSpecificDate = Boolean(values.specific_date)
+        if (!hasWeekday && !hasSpecificDate) {
+          throw new Error('Debes indicar un día recurrente o una fecha puntual.')
+        }
+        if (values.starts_at && values.ends_at && values.ends_at <= values.starts_at) {
+          throw new Error('La hora de fin (Hasta) debe ser posterior a la de inicio (Desde).')
+        }
+      }
       const payload = buildPayload(resource, values)
       if (editing) {
         await api.update(resource, editing.id, payload)
